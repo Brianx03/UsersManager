@@ -11,12 +11,25 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "User Manager API", Description = "Manages Users Info", Version = "v1" });
 });
+
 var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "UserManager API V1");
+    c.RoutePrefix = string.Empty;
+});
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/")
+    {
+        context.Response.Redirect("/swagger");
+        return;
+    }
+
+    await next();
 });
 
 app.MapGet("/User/{userId}", (int userId, IUsersService usersService) => usersService.GetUserDataAsync(userId));
